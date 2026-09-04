@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>An Offering</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap');
+
+        :root {
+            --bg-color: #FAF5F0;
+            --text-dark: #1f1f1f;
+            --text-muted: #626262;
+            --card-bg: rgba(255, 255, 255, 0.88);
+            --card-border: rgba(255, 255, 255, 0.6);
+            --font-title: 'Cinzel', serif;
+            --font-body: 'Cormorant Garamond', serif;
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+            color: var(--text-dark);
+            font-family: var(--font-body);
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+
+        .bg-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+            z-index: 0;
+            transition: filter 1.2s ease;
+        }
+
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: floatOrb 12s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: #f7d6d0;
+            top: -50px;
+            left: -50px;
+        }
+
+        .orb-2 {
+            width: 350px;
+            height: 350px;
+            background: #e2c0b7;
+            bottom: -100px;
+            right: -100px;
+            animation-delay: -4s;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, 40px) scale(1.1); }
+            100% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            transition: filter 1.2s ease;
+        }
+
+        body.submitted #canvas,
+        body.submitted .bg-gradient {
+            filter: blur(8px);
+        }
+
+        .main-stage {
+            position: relative;
+            z-index: 3;
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reopen-btn {
+            position: absolute;
+            bottom: 20px;
+            z-index: 2;
+            font-family: var(--font-title);
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--card-border);
+            padding: 10px 20px;
+            color: var(--text-dark);
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: opacity 1s var(--ease-out), transform 1s var(--ease-out);
+        }
+
+        .reopen-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .card-wrapper {
+            width: 100%;
+            padding: 30px 24px 35px 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+            text-align: center;
+            border-radius: 12px;
+            opacity: 0;
+            transform: translateY(18px) scale(0.98);
+            transition: opacity 1.5s var(--ease-out), transform 1.5s var(--ease-out), filter 1.2s ease;
+            pointer-events: none;
+        }
+
+        .card-wrapper.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .card-wrapper.blurred {
+            filter: blur(12px);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .card-header {
+            margin-bottom: 18px;
+        }
+
+        .card-header .rule {
+            width: 24px;
+            height: 1px;
+            background-color: var(--text-dark);
+            margin: 0 auto 12px auto;
+            opacity: 0.6;
+        }
+
+        .card-header .salutation {
+            font-family: var(--font-title);
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 400;
+            color: var(--text-dark);
+        }
+
+        .card-body {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            font-weight: 300;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .reply-container {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.8s var(--ease-out), opacity 0.8s var(--ease-out), margin 0.4s ease;
+            margin-bottom: 0;
+        }
+
+        .reply-container.active {
+            max-height: 150px;
+            opacity: 1;
+            margin-bottom: 18px;
+        }
+
+        .reply-input {
+            width: 100%;
+            height: 70px;
+            padding: 10px;
+            border: 1px solid var(--card-border);
+            background: rgba(255, 255, 255, 0.85);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--text-dark);
+            resize: none;
+            outline: none;
+            font-style: italic;
+            border-radius: 6px;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-direction: column;
+        }
+
+        .btn {
+            font-family: var(--font-title);
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            /* Darker, solid border so it stands out immediately */
+            border: 1.5px solid rgba(31, 31, 31, 0.4);
+            /* Slight background shade to define button shape */
+            background: rgba(255, 255, 255, 0.85);
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            width: 100%;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn:hover {
+            background: var(--text-dark);
+            color: #ffffff;
+            border-color: var(--text-dark);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-secondary {
+            color: var(--text-dark);
+            background: rgba(255, 255, 255, 0.4);
+            border: 1.5px solid rgba(31, 31, 31, 0.25);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(31, 31, 31, 0.1);
+            color: var(--text-dark);
+            border-color: var(--text-dark);
+        }
+        .princess-container {
+            position: relative;
+            top: 0;
+            left: 0;
+            transform: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: all 0.8s ease;
+            margin-bottom: 15px;
+        }
+
+        .princess-container.visible {
+            opacity: 1;
+        }
+
+        .floating-avatar {
+            width: 100px;
+            max-width: 80vw;
+            height: auto;
+            max-height: 110px;
+            animation: livelyFloat 3.8s ease-in-out infinite;
+            object-fit: contain;
+            mix-blend-mode: multiply;
+            -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+            mask-image: radial-gradient(circle, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+            box-shadow: none;
+            border: none;
+            background: transparent;
+        }
+
+        .princess-bubble {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid var(--card-border);
+            padding: 6px 14px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-style: italic;
+            color: var(--text-dark);
+            white-space: nowrap;
+            margin-bottom: 6px;
+            opacity: 0;
+            transform: translateY(6px) scale(0.95);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .princess-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid rgba(255, 255, 255, 0.96);
+        }
+
+        .princess-bubble.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Clean stacked structure inside modal */
+        .modal-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 24px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+            width: 90%;
+            max-width: 380px;
+        }
+
+        .modal-card .princess-container {
+            position: relative;
+            top: 0;
+            left: 0;
+            transform: none;
+            margin-bottom: 15px;
+            opacity: 1;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-card p {
+           font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-style: italic;
+    color: var(--text-dark);
+    line-height: 1.5;
+    margin-bottom: 20px;
+    max-height: 250px; /* Prevents overflow on mobile screens */
+    overflow-y: auto;
+    text-align: center;
+    padding: 0 5px;
+        }
+
+        .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.1rem;
+            background-color: var(--text-dark);
+            margin-left: 2px;
+            animation: blinkCursor 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blinkCursor {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .modal-btn {
+            font-family: var(--font-title);
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 8px 20px;
+            border: 1px solid var(--card-border);
+            background: var(--text-dark);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(10px);
+            border-radius: 4px;
+        }
+
+        .modal-btn.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes livelyFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-6px) rotate(-1.5deg); }
+            50% { transform: translateY(-2px) rotate(0deg); }
+            75% { transform: translateY(-7px) rotate(1.5deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-gradient"></div>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+
+    <canvas id="canvas"></canvas>
+
+    <div class="main-stage" id="mainStage">
+        <div class="princess-container" id="princessContainer">
+            <div class="princess-bubble" id="princessBubble">✨ Hi princess Yukta, I'm your digital sokhi.<br>Leave a note after you finish reading...</div>
+            <img class="floating-avatar" src="radha 2.jpeg" alt="Assistant Princess">
+        </div>
+
+        <div class="card-wrapper" id="card">
+            <div class="card-header">
+                <div class="rule"></div>
+                <div class="salutation">To my dear Yukta</div>
+            </div>
+            <p class="card-body">
+                You know why my heart is exactly like Kanha's little clay pot?<br>
+                Because it was always meant to be completely stolen by you. You are the absolute<br>
+                cutest pookie in my universe. Just like Radha is the only reason the divine story feels<br>
+                complete, you are the exact magic that makes my everyday life so beautifully perfect. I might not<br>
+                wear a peacock feather, but my soul definitely dance every single time you smile at me.
+            </p>
+                 <div class="salutation">_ Sohan</div><br>
+            <div class="reply-container" id="replyContainer">
+                <textarea class="reply-input" id="replyText" placeholder="Write your responce or your wish to send him..."></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn" id="sendBtn" onclick="handleSendClick()">Send your message/responce</button>
+                <button class="btn btn-secondary" onclick="closeCard()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="reopen-btn" id="reopenBtn" onclick="openCard()">Open Card</button>
+
+    <div class="modal-overlay" id="finalModal">
+        <div class="modal-card" id="modalCard">
+            <p><span id="typedText"></span><span class="typing-cursor" id="cursor"></span></p>
+            <button class="modal-btn" id="modalBtn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD1qgd4dNXzWuw8GcFOl_FDGyBIZ1qg89M",
+            authDomain: "romantic-card.firebaseapp.com",
+            databaseURL: "https://romantic-card-default-rtdb.firebaseio.com",
+            projectId: "romantic-card",
+            storageBucket: "romantic-card.firebasestorage.app",
+            messagingSenderId: "830600859883",
+            appId: "1:830600859883:web:69794bacef011dc0722eae"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const card = document.getElementById('card');
+        const reopenBtn = document.getElementById('reopenBtn');
+        const replyContainer = document.getElementById('replyContainer');
+        const replyText = document.getElementById('replyText');
+        const sendBtn = document.getElementById('sendBtn');
+        const princessBubble = document.getElementById('princessBubble');
+        const princessContainer = document.getElementById('princessContainer');
+        const mainStage = document.getElementById('mainStage');
+        const finalModal = document.getElementById('finalModal');
+        const modalCard = document.getElementById('modalCard');
+        const typedTextElement = document.getElementById('typedText');
+        const modalBtn = document.getElementById('modalBtn');
+        const cursor = document.getElementById('cursor');
+
+        let width, height;
+        let dpr = window.devicePixelRatio || 1;
+
+        function setupCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
+            ctx.scale(dpr, dpr);
+        }
+
+        setupCanvas();
+
+        const PALETTE = {
+            stem: '#3A4D39',
+            petals: [
+                'rgba(216, 167, 177, 0.85)',
+                'rgba(238, 203, 209, 0.80)',
+                'rgba(192, 136, 150, 0.85)',
+                'rgba(247, 237, 226, 0.90)'
+            ],
+            center: '#D4A373'
+        };
+
+        class Flower {
+            constructor(x, y, targetRadius, layerCount, angleOffset = 0) {
+                this.x = x;
+                this.y = y;
+                this.targetRadius = targetRadius;
+                this.layerCount = layerCount;
+                this.angleOffset = angleOffset;
+                this.bloomProgress = 0;
+            }
+
+            draw(progress) {
+                this.bloomProgress = Math.min(Math.max(progress, 0), 1);
+                if (this.bloomProgress <= 0) return;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                for (let layer = 0; layer < this.layerCount; layer++) {
+                    const layerRatio = layer / this.layerCount;
+                    const petalsInLayer = 6 + layer * 2;
+                    const layerRadius = (1 - layerRatio * 0.6) * this.targetRadius * this.bloomProgress;
+                    const layerColor = PALETTE.petals[layer % PALETTE.petals.length];
+                    const rotationOffset = this.angleOffset + (layer * Math.PI / 5);
+
+                    const layerProgress = Math.min(Math.max((this.bloomProgress - layerRatio * 0.3) / 0.7, 0), 1);
+                    const easedProgress = Math.sin(layerProgress * Math.PI / 2);
+
+                    ctx.save();
+                    ctx.rotate(rotationOffset);
+
+                    for (let i = 0; i < petalsInLayer; i++) {
+                        const angle = (i * Math.PI * 2) / petalsInLayer;
+                        ctx.save();
+                        ctx.rotate(angle);
+
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        const currentPetalLen = layerRadius * easedProgress;
+                        const widthFactor = currentPetalLen * 0.35;
+
+                        ctx.bezierCurveTo(
+                            -widthFactor, -currentPetalLen * 0.4,
+                            -widthFactor * 0.8, -currentPetalLen * 0.9,
+                            0, -currentPetalLen
+                        );
+                        ctx.bezierCurveTo(
+                            widthFactor * 0.8, -currentPetalLen * 0.9,
+                            widthFactor, -currentPetalLen * 0.4,
+                            0, 0
+                        );
+
+                        ctx.fillStyle = layerColor;
+                        ctx.fill();
+
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+
+                        ctx.restore();
+                    }
+                    ctx.restore();
+                }
+
+                if (this.bloomProgress > 0.4) {
+                    const centerProgress = (this.bloomProgress - 0.4) / 0.6;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, (this.targetRadius * 0.15) * centerProgress, 0, Math.PI * 2);
+                    ctx.fillStyle = PALETTE.center;
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        let stems = [];
+        let flowers = [];
+
+        function initBouquet() {
+            const centerX = width / 2;
+            const baseY = height + 20;
+            const scaleFactor = Math.min(width / 400, 1);
+
+            stems = [
+                { startX: centerX, startY: baseY, controlX: centerX - 5, controlY: height * 0.65, endX: centerX, endY: height * 0.45 },
+                { startX: centerX - 5, startY: baseY, controlX: centerX - (40 * scaleFactor), controlY: height * 0.65, endX: centerX - (50 * scaleFactor), endY: height * 0.50 },
+                { startX: centerX + 5, startY: baseY, controlX: centerX + (40 * scaleFactor), controlY: height * 0.65, endX: centerX + (50 * scaleFactor), endY: height * 0.48 },
+                { startX: centerX - 10, startY: baseY, controlX: centerX - (90 * scaleFactor), controlY: height * 0.70, endX: centerX - (100 * scaleFactor), endY: height * 0.57 },
+                { startX: centerX + 10, startY: baseY, controlX: centerX + (90 * scaleFactor), controlY: height * 0.70, endX: centerX + (100 * scaleFactor), endY: height * 0.55 }
+            ];
+
+            flowers = [
+                new Flower(stems[0].endX, stems[0].endY, 50 * scaleFactor, 4, 0),
+                new Flower(stems[1].endX, stems[1].endY, 40 * scaleFactor, 3, 0.3),
+                new Flower(stems[2].endX, stems[2].endY, 42 * scaleFactor, 3, 0.6),
+                new Flower(stems[3].endX, stems[3].endY, 35 * scaleFactor, 3, 0.2),
+                new Flower(stems[4].endX, stems[4].endY, 36 * scaleFactor, 3, 0.5)
+            ];
+        }
+
+        initBouquet();
+
+        let startTime = null;
+        const stemDuration = 2000;
+        const bloomDuration = 2400;
+        const pauseBeforeCard = 300;
+        let princessTimerTriggered = false;
+
+        function render(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const stemProgress = Math.min(elapsed / stemDuration, 1.0);
+            const easedStem = Math.sin(stemProgress * Math.PI / 2);
+
+            stems.forEach(stem => {
+                ctx.beginPath();
+                ctx.moveTo(stem.startX, stem.startY);
+
+                const currentX = stem.startX + (stem.endX - stem.startX) * easedStem;
+                const currentY = stem.startY + (stem.endY - stem.startY) * easedStem;
+                const currentCtrlX = stem.startX + (stem.controlX - stem.startX) * easedStem;
+                const currentCtrlY = stem.startY + (stem.controlY - stem.startY) * easedStem;
+
+                ctx.quadraticCurveTo(currentCtrlX, currentCtrlY, currentX, currentY);
+                ctx.strokeStyle = PALETTE.stem;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            });
+
+            if (elapsed > stemDuration * 0.7) {
+                const bloomElapsed = elapsed - (stemDuration * 0.7);
+                const globalBloomProgress = Math.min(bloomElapsed / bloomDuration, 1.0);
+
+                flowers.forEach((flower, index) => {
+                    const delay = index * 0.1;
+                    const individualProgress = Math.max(0, (globalBloomProgress - delay) / (1 - delay));
+                    flower.draw(individualProgress);
+                });
+            }
+
+            if (elapsed > (stemDuration + bloomDuration + pauseBeforeCard) && !card.classList.contains('visible') && !reopenBtn.classList.contains('visible')) {
+                card.classList.add('visible');
+
+                if (!princessTimerTriggered) {
+                    princessTimerTriggered = true;
+                    setTimeout(() => {
+                        princessContainer.classList.add('visible');
+                        setTimeout(() => princessBubble.classList.add('visible'), 500);
+                    }, 3000);
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+
+        function closeCard() {
+            card.classList.remove('visible');
+            reopenBtn.classList.add('visible');
+            princessBubble.classList.remove('visible');
+            princessContainer.classList.remove('visible');
+        }
+
+        function openCard() {
+            card.classList.add('visible');
+            reopenBtn.classList.remove('visible');
+            setTimeout(() => {
+                princessContainer.classList.add('visible');
+                setTimeout(() => princessBubble.classList.add('visible'), 500);
+            }, 500);
+        }
+
+        function typeWriterEffect(text, index = 0) {
+            if (index < text.length) {
+                if (text.charAt(index) === '\n') {
+                    typedTextElement.innerHTML += '<br>';
+                } else {
+                    typedTextElement.innerHTML += text.charAt(index);
+                }
+                setTimeout(() => typeWriterEffect(text, index + 1), 45);
+            } else {
+                cursor.style.display = 'none';
+                modalBtn.classList.add('visible');
+            }
+        }
+
+        function executeSubmissionSequence() {
+            document.body.classList.add('submitted');
+            card.classList.add('blurred');
+            princessBubble.classList.remove('visible');
+
+            modalCard.insertBefore(princessContainer, modalCard.firstChild);
+
+            setTimeout(() => {
+                finalModal.classList.add('active');
+                typedTextElement.innerHTML = '';
+                cursor.style.display = 'inline-block';
+                modalBtn.classList.remove('visible');
+                
+                const fullMessage = "Your message will be sent to your boyfriend, princess.\nBtw you know what, you are very beautiful.\nYou and your boyfriend are perfect match.\nHe made this wish box & me just for you to know your wish\nthat you can't tell him. He just created this entire encrypted database for you where you can share your wish with him privately.\n You don't know how much beautiful you are in his eyes.\nAlways stay happy together.✨";
+                typeWriterEffect(fullMessage);
+            }, 500);
+        }
+
+        function handleSendClick() {
+            if (!replyContainer.classList.contains('active')) {
+                replyContainer.classList.add('active');
+                replyText.focus();
+                sendBtn.innerText = "Submit Note";
+                princessBubble.innerText = "✨ Write something sweet...";
+            } else {
+                const note = replyText.value.trim();
+                if (!note) return;
+
+                sendBtn.disabled = true;
+                sendBtn.innerText = "Sending...";
+
+                database.ref('cardNotes').push({
+                    message: note,
+                    timestamp: new Date().toISOString()
+                }).then(() => {
+                    executeSubmissionSequence();
+                }).catch(() => {
+                    executeSubmissionSequence();
+                }).finally(() => {
+                    sendBtn.disabled = false;
+                });
+            }
+        }
+
+        function closeModal() {
+            finalModal.classList.remove('active');
+            
+            setTimeout(() => {
+                mainStage.insertBefore(princessContainer, card);
+                document.body.classList.remove('submitted');
+                card.classList.remove('blurred');
+                
+                setTimeout(() => {
+                    princessBubble.innerText = "✨ Message sent! Do you have any other wish just write it down here";
+                    princessBubble.classList.add('visible');
+                }, 600);
+            }, 400);
+        }
+
+        window.addEventListener('resize', () => {
+            setupCanvas();
+            initBouquet();
+        });
+    </script>
+</body>
+</html>
